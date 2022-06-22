@@ -1,8 +1,7 @@
 # Vicinity-Vision-Transformer
 
-This repo is the official implementations of [Vicinity Vision Transformer](https://arxiv.org/abs/2206.10552)
-![image](https://user-images.githubusercontent.com/13931546/174962070-c5bff58d-82ba-41e4-98a0-1b75893e526a.png)
-
+This repo is the official implementations of [Vicinity Vision Transformer](https://arxiv.org/abs/2206.10552).
+It serves as a general-purpose backbone for image classification, semantic segmentation, object detction tasks. 
 
 if you use this code, please cite:
 
@@ -21,5 +20,27 @@ if you use this code, please cite:
 - [ ] Segmentation code
 - [ ] ImageNet21k pre-training
 
+## Weight
+### VVT on ImageNet-1K
+
+| Method           | Size | Acc@1 | #Params (M) | Link |
+|------------------|:----:|:-----:|:-----------:|:-----:|
+| VVT-tiny          |  224 |  79.2 |     12.9    | [link](https://1drv.ms/u/s!Ak3sXyXVg781gtRFwwHih3Yu9G3FGg?e=yHKvuc)    |
+| VVT-tiny          |  384 |  80.3 |     12.9    |     |
+| VVT-small        |  224 |  82.6 |     25.5    |   [link](https://1drv.ms/u/s!Ak3sXyXVg781gtREWfCdlLJVy1IgpA?e=l4h3Wi)   |
+| VVT-small        |  384 |  83.4 |     25.5    |      |
+| VVT-medium       |  224 |  83.8 |     47.9    |   [link](https://1drv.ms/u/s!Ak3sXyXVg781gtRG4lD_uEVyj7cPYw?e=ihjjtO)   |
+| VVT-large        |  224 |  84.1 |     61.8    |  [link](https://1drv.ms/u/s!Ak3sXyXVg781gtRHmfu0BybCZ8k1FQ?e=fLskgG)    |
+| VVT-large        |  384 |  84.7 |     61.8    |      |
+
+
+
+
+
+
+
+
+---
+Our code is developed based on [TIMM](https://github.com/rwightman/pytorch-image-models) and [PVT](https://github.com/whai362/PVT)
 
 
