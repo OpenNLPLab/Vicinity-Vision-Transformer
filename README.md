@@ -1,6 +1,8 @@
 # Vicinity-Vision-Transformer
 
 This repo is the official implementations of [Vicinity Vision Transformer](https://arxiv.org/abs/2206.10552)
+![image](https://user-images.githubusercontent.com/13931546/174962070-c5bff58d-82ba-41e4-98a0-1b75893e526a.png)
+
 
 if you use this code, please cite:
 
