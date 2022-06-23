@@ -16,9 +16,18 @@ if you use this code, please cite:
 }
 ```
 
+![image](https://user-images.githubusercontent.com/13931546/175231586-5e7c46f3-29a2-4497-9ddf-bc40aeee88b3.png)
+
+
 ## Todo
 - [ ] Segmentation code
 - [ ] ImageNet21k pre-training
+
+## Usage
+### Training
+
+
+
 
 ## Weight
 ### VVT on ImageNet-1K
