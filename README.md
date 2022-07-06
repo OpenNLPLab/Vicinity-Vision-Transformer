@@ -73,6 +73,7 @@ sh train.sh configs/vvt/vvt_small.py 8
 | VVT-small        |  224 |  82.6 |     25.5    |   [link](https://1drv.ms/u/s!Ak3sXyXVg781gtREWfCdlLJVy1IgpA?e=l4h3Wi)   |
 | VVT-small        |  384 |  83.4 |     25.5    |   -   |
 | VVT-medium       |  224 |  83.8 |     47.9    |   [link](https://1drv.ms/u/s!Ak3sXyXVg781gtRG4lD_uEVyj7cPYw?e=ihjjtO)   |
+| VVT-medium        |  384 |  84.5 |     47.9    |   -   |
 | VVT-large        |  224 |  84.1 |     61.8    |  [link](https://1drv.ms/u/s!Ak3sXyXVg781gtRHmfu0BybCZ8k1FQ?e=fLskgG)    |
 | VVT-large        |  384 |  84.7 |     61.8    |   -   |
 
