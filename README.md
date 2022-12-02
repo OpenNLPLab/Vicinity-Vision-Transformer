@@ -1,5 +1,7 @@
 # Vicinity-Vision-Transformer
 
+[[Project Page]](https://opennlplab.github.io/vvt/)
+
 This repo is the official implementations of [Vicinity Vision Transformer](https://arxiv.org/abs/2206.10552).
 It serves as a general-purpose backbone for image classification, semantic segmentation, object detction tasks. 
 
