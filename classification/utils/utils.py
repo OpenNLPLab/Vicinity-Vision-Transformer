@@ -5,19 +5,23 @@ Misc functions, including distributed helpers.
 
 Mostly copy-paste from torchvision references.
 """
-import io
-import os
-import time
-from collections import defaultdict, deque
 import datetime
-from xml.sax.handler import property_dom_node
-
-import torch
-import torch.distributed as dist
-import mmcv
-import numpy as np
+import io
+import logging
+import os
 import socket
 import subprocess
+import time
+from collections import defaultdict, deque
+from xml.sax.handler import property_dom_node
+
+import mmcv
+import numpy as np
+import torch
+import torch.distributed as dist
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("dist init")
 
 class SmoothedValue(object):
     """Track a series of values and provide access to smoothed values over a
@@ -222,6 +226,10 @@ def get_ip():
 
     return ip
 
+def logging_info(string):
+    if is_main_process():
+        logger.info(string)
+
 def init_distributed_mode(args):
     # 本地多卡
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
@@ -229,16 +237,17 @@ def init_distributed_mode(args):
         args.world_size = int(os.environ['WORLD_SIZE'])
         # single gpu
         if args.world_size == 1:
+            args.distributed = False
             return
         args.gpu = int(os.environ['LOCAL_RANK'])
         args.distributed = True
         torch.cuda.set_device(args.gpu)
         args.dist_backend = 'nccl'
-        print('| distributed init (rank {}): {}'.format(args.rank, args.dist_url), flush=True)
-        print(args.dist_backend)
-        print(args.dist_url)
-        print(args.world_size)
-        print(args.rank)
+        logging_info(f'distributed init (rank {args.rank}): {args.dist_url}')
+        logging_info(args.dist_backend)
+        logging_info(args.dist_url)
+        logging_info(args.world_size)
+        logging_info(args.rank)
         torch.distributed.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                             world_size=args.world_size, rank=args.rank)
         torch.distributed.barrier()
@@ -246,10 +255,9 @@ def init_distributed_mode(args):
 
         return
 
-    # slurm
-    local_rank = int(os.environ['SLURM_LOCALID'])
-    port = str(args.port)
+    port = os.environ['MASTER_PORT']
     proc_id = int(os.environ['SLURM_PROCID'])
+    local_rank = proc_id % torch.cuda.device_count()
     ntasks = int(os.environ['SLURM_NTASKS'])
     node_list = os.environ['SLURM_NODELIST']
     hostnames = subprocess.check_output(
@@ -265,24 +273,23 @@ def init_distributed_mode(args):
     if 'SLURM_PROCID' in os.environ:
         rank = int(os.environ['SLURM_PROCID'])
         gpu = rank % torch.cuda.device_count()
-        print(f"SLURM {gpu}")
+        logging_info(f"SLURM {gpu}")
     args.rank = int(os.environ["RANK"])
     args.world_size = int(os.environ['WORLD_SIZE'])
     args.gpu = int(os.environ['LOCAL_RANK'])
     args.distributed = True
     torch.cuda.set_device(local_rank)
-    args.dist_backend = 'nccl'
+    args.dist_backend = "nccl"
     host_addr_full = 'tcp://' + addr + ':' + port
-
-    print(f"addr: {host_addr_full}")
-    print(f"ip {get_ip()}")
-    print(f"MASTER_ADDR {addr}")
-    print(f"port {port}")
-    print(f"world_size {os.environ['WORLD_SIZE']}")
-    print(f"rank {os.environ['RANK']}")
-    print(f"local_rank {os.environ['LOCAL_RANK']}")
-    print('| distributed init (rank {})'.format(local_rank), flush=True)
-
+    logging_info(f"ip {get_ip()}")
+    logging_info(f"MASTER_ADDR {addr}")
+    logging_info(f"port {port}")
+    logging_info(f"world_size {os.environ['WORLD_SIZE']}")
+    logging_info(f"rank {os.environ['RANK']}")
+    logging_info(f"local_rank {os.environ['LOCAL_RANK']}")
+    logging_info(f'distributed init (rank {args.rank}): {args.dist_url}')
+    logging_info(f"addr: {host_addr_full}")
+    
     torch.distributed.init_process_group(backend=args.dist_backend, init_method=host_addr_full,
                                          world_size=args.world_size, rank=args.rank)
     torch.distributed.barrier()

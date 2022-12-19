@@ -1,8 +1,7 @@
 import argparse
 import torch
 from timm.models import create_model
-import pvt
-import pvt_v2
+from models import *
 
 try:
     from mmcv.cnn import get_model_complexity_info

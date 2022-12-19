@@ -12,7 +12,7 @@ import torch
 from timm.data import Mixup
 from timm.utils import accuracy, ModelEma
 
-from losses import DistillationLoss
+from .losses import DistillationLoss
 import utils
 import os
 import pdb
@@ -20,7 +20,6 @@ import os
 
 import inspect
 import numpy as np
-import cv2
 from torchvision import transforms
 
 
@@ -44,16 +43,15 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     model_ema: Optional[ModelEma] = None, mixup_fn: Optional[Mixup] = None,
                     set_training_mode=True,
                     fp32=False,
-                    distributed=False):
+                    distributed=False,
+                    test=False,
+    ):
     
     model.train(set_training_mode)
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
     print_freq = 10
-
-    # ForkedPdb()
-
 
     # try:
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
@@ -63,21 +61,10 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
         if mixup_fn is not None:
             samples, targets = mixup_fn(samples, targets)
 
-        # with torch.cuda.amp.autocast():
-        #     outputs = model(samples)
-        #     loss = criterion(samples, outputs, targets)
         with torch.cuda.amp.autocast(enabled=not fp32):
             outputs = model(samples)
             outputs = outputs.float() # back to fp32
             loss = criterion(samples, outputs, targets)
-        
-        # if torch.isnan(loss):
-        #     print('loss is nan!!!...')
-
-        #     torch.distributed.barrier()
-        #     continue
-
-
 
         loss_value = loss.item()
 
@@ -101,13 +88,13 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
         if distributed:
             torch.distributed.barrier()
+            
+        if test:
+            break
     
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     print("Averaged stats:", metric_logger)
-    # except:
-        # ForkedPdb().set_trace()
-
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
 
@@ -206,7 +193,7 @@ def generate_cam(data_loader, model, device):
                 norm_cam = cam / (np.max(cam, (0,1), keepdims=True) + 1e-5)
                 print(norm_cam.shape)
 
-                cv2.imwrite('/mnt/lustre/sunweixuan/pvc/classification/cam_output/pvt_v2_b1/{}_{}.png'.format(count, batch), norm_cam[0,0,:,:]*255)
+                # cv2.imwrite('./cam_output/pvt_v2_b1/{}_{}.png'.format(count, batch), norm_cam[0,0,:,:]*255)
 
 
             loss = criterion(output, target)
@@ -283,7 +270,7 @@ def generate_grad_cam(data_loader, model, device, methods):
                 norm_cam = cam / (np.max(cam, (0,1), keepdims=True) + 1e-5)
                 print(norm_cam.shape)
                 
-                cv2.imwrite('/mnt/lustre/sunweixuan/pvc/classification/cam_output/pvt_v2_b1/{}_{}.png'.format(count, batch), norm_cam[0,0,:,:]*255)
+                # cv2.imwrite('./cam_output/pvt_v2_b1/{}_{}.png'.format(count, batch), norm_cam[0,0,:,:]*255)
 
 
             loss = criterion(output, target)

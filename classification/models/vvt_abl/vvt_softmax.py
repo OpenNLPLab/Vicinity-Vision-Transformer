@@ -1,16 +1,17 @@
+import math
+from functools import partial
 from sre_constants import AT_NON_BOUNDARY
+from typing import Optional
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from functools import partial
-
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 from timm.models.registry import register_model
 from timm.models.vision_transformer import _cfg
-import math
-import numpy as np
 from torch import Tensor
-from typing import Optional
+from utils.utils import logging_info
 
 
 class Mlp(nn.Module):
@@ -98,7 +99,7 @@ class pvt_Attention(nn.Module):
 
         self.linear = linear
         self.sr_ratio = sr_ratio
-        print('linear:', linear, 'sr_ratio:', sr_ratio)
+        logging_info(f"linear: {linear}, sr_ratio: {sr_ratio}")
 
         if not linear:
             if sr_ratio > 1:
@@ -211,10 +212,10 @@ class VicinityVisionAttention(nn.Module):
         self.use_sum = use_sum
         if self.use_sum:
             print('use sum')
-            print('linear:', linear, 'sr_ratio:', sr_ratio, 'fr_ratio:', fr_ratio, 'se_ratio:', se_reduction)
+            logging_info(f"linear: {linear}, sr_ratio: {sr_ratio}, fr_ratio: {fr_ratio} se_ratio: {se_reduction}")
         else:
             print('use production')
-            print('linear:', linear, 'sr_ratio:', sr_ratio, 'fr_ratio:', fr_ratio, 'se_ratio:', se_reduction)
+            logging_info(f"linear: {linear}, sr_ratio: {sr_ratio}, fr_ratio: {fr_ratio} se_ratio: {se_reduction}")
 
         # se block:
         reduction = se_reduction
@@ -404,7 +405,8 @@ class Block(nn.Module):
         self.norm1 = norm_layer(dim)
         self.seq_len = seq_len
         
-        self.attn = VicinityVisionAttention(embed_dim=dim, num_heads=num_heads, sr_ratio=sr_ratio, fr_ratio = fr_ratio, linear=linear, se_reduction=se_ratio)
+        # self.attn = VicinityVisionAttention(embed_dim=dim, num_heads=num_heads, sr_ratio=sr_ratio, fr_ratio = fr_ratio, linear=linear, se_reduction=se_ratio)
+        self.attn = Vanilla_Attention(dim=dim, num_heads=num_heads)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -504,7 +506,7 @@ class VicinityVisionTransformer(nn.Module):
             else:
                 seq_len = ((img_size // (2 ** (i + 1))) // 2)**2
 
-            print('seq_len:', seq_len, 'embed dim:', embed_dims[i], 'num heads:', num_heads[i], 'depth:', depths[i])
+            logging_info(f"seq_len: {seq_len}, embed dim: {embed_dims[i]}, num heads: {num_heads[i]}, depth: {depths[i]}")
 
             block = nn.ModuleList([Block(
                 dim=embed_dims[i], num_heads=num_heads[i], mlp_ratio=mlp_ratios[i], qkv_bias=qkv_bias, qk_scale=qk_scale,
@@ -599,7 +601,7 @@ def _conv_filter(state_dict, patch_size=16):
 
 ### VVT
 @register_model
-def vvt_test(pretrained=False, **kwargs):
+def vvt_softmax_test(pretrained=False, **kwargs):
     model = VicinityVisionTransformer(
         patch_size=4, embed_dims=[32, 32, 32, 32], num_heads=[1, 1, 1, 1], mlp_ratios=[1, 1, 1, 1], qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[1, 1, 1, 1], sr_ratios=[1, 1, 1, 1],
@@ -609,7 +611,7 @@ def vvt_test(pretrained=False, **kwargs):
     return model
 
 @register_model
-def vvt_tiny(pretrained=False, **kwargs):
+def vvt_softmax_tiny(pretrained=False, **kwargs):
     model = VicinityVisionTransformer(
         patch_size=4, embed_dims=[96, 160, 320, 512], num_heads=[1,2,5,8], mlp_ratios=[8, 8, 4, 4], qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[2, 2, 2, 2], 
@@ -620,7 +622,7 @@ def vvt_tiny(pretrained=False, **kwargs):
     return model
 
 @register_model
-def vvt_small(pretrained=False, **kwargs):
+def vvt_softmax_small(pretrained=False, **kwargs):
     model = VicinityVisionTransformer(
         patch_size=4, embed_dims=[96, 160, 320, 512], num_heads=[1, 2, 5, 8], mlp_ratios=[8, 8, 4, 4], qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[3, 3, 9, 3], 
@@ -631,7 +633,7 @@ def vvt_small(pretrained=False, **kwargs):
     return model
 
 @register_model
-def vvt_medium(pretrained=False, **kwargs):
+def vvt_softmax_medium(pretrained=False, **kwargs):
     model = VicinityVisionTransformer(
         patch_size=4, embed_dims=[96, 160, 320, 512], num_heads=[1, 2, 5, 8], mlp_ratios=[8, 8, 4, 4], qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[3, 3, 27, 3], 
@@ -642,7 +644,7 @@ def vvt_medium(pretrained=False, **kwargs):
     return model
 
 @register_model
-def vvt_large(pretrained=False, **kwargs):
+def vvt_softmax_large(pretrained=False, **kwargs):
     model = VicinityVisionTransformer(
         patch_size=4, embed_dims=[96, 160, 320, 512], num_heads=[1, 2, 5, 8], mlp_ratios=[4, 4, 4, 4], qkv_bias=True,
         norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[4, 4, 36, 4], 

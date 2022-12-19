@@ -12,12 +12,12 @@ class ClassificationDataset(Dataset):
             self.data_source = ImageNet(root='/mnt/cache/share/images/train',
                                         list_file='/mnt/cache/share/images/meta/train.txt',
                                         memcached=True,
-                                        mclient_path='/mnt/lustre/sunweixuan')
+                                        mclient_path='/mnt/lustre/share/memcached_client')
         else:
             self.data_source = ImageNet(root='/mnt/cache/share/images/val',
                                         list_file='/mnt/cache/share/images/meta/val.txt',
                                         memcached=True,
-                                        mclient_path='/mnt/lustre/sunweixuan')
+                                        mclient_path='/mnt/lustre/share/memcached_client')
         self.pipeline = pipeline
 
     def __len__(self):
