@@ -12,7 +12,8 @@ CONFIG_DIR=configs/vit
 DATA=~/Desktop/pvc/data
 
 # for ARCH in vvt_gcnet_tiny vvt_no_conv_tiny vvt_softmax_tiny
-for ARCH in vit_small_patch32_224
+# for ARCH in vit_small_patch32_224
+for ARCH in vit_small_patch16_224
 do
     CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch --nproc_per_node=$GPUS --master_port=$PORT \
         --use_env $PROG --data-set CIFAR --batch-size $batch_size --num_workers 1 --lr 3e-3 \
